@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .active{
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <audio src="tu-do.mp3" @timeupdate='onTimeUpdateListener' @play="renderLine()" @ ref="audioplayer" controls></audio>
+        <h3>Current time : {{ curTime.toFixed() }}</h3>
+        <div id="player">
+            <input @keypress.space="regTime()" @keypress.enter="regNextLine()" type="text" placeholder="Enter -> New Line / Space Current Words">
+            <div id="line_1" style="text-align:center">
+                <span class="char" v-for="(l,index) in lyric[curLine].split(' ')" :class="(curTime >= timeLyricArr()[curLine][index])?'active':''">
+                    {{ l }}
+                </span>    
+            </div>
+            <hr>
+            <div id="line_2" style="text-align:center">
+                <span class="char" v-for="(l,index) in lyric[curLine+1].split(' ')" :class="(curTime >= timeLyricArr()[curLine+1][index])?'active':''">
+                    {{ l }}
+                </span>    
+            </div>
+        </div>
+    </div>
+    <script src="../../assets/js/vue-2.6.10.js"></script>    
+    <script>
+        const vm = new Vue({
+            el: '#app',
+            data: {
+                lyric: [
+                'Và hồn tôi từ đó là khúc ca vang trong ngần',
+                'làm đôi môi rạng rỡ tình ban đầu',
+                'Hòa vào cây vương vào nắng và giấc mơ tôi có nàng',
+                'Trong bài ca ta bước thênh thang',
+                'End'
+                ],
+                timeNodes: [11.449, 11.707, 12.205, 13.205, 13.446, 14.702, 14.966, 15.455, 15.753, 15.953, 16.514, 17.198, 17.451, 17.951, 18.95, 19.207, 19.947, 20.205, 20.945, 22.7, 23.2, 23.454, 24.452, 24.698, 24.952, 25.949, 26.45, 26.707, 26.948, 27.448, 27.705, 28.447, 28.704, 29.202, 30.201, 30.456, 31.698, 31.953],
+                timeNextLine: [17, 21, 28, 33],
+                curLineTimeNodes: [],
+                curLine: 0,
+                curTime: 0,
+            },
+            methods: {
+                onTimeUpdateListener(){
+                    this.curTime = this.$refs.audioplayer.currentTime;
+                },
+                regTime(){
+                    this.timeNodes.push(this.curTime);
+                    console.log('words: ',this.timeNodes);
+                },
+                regNextLine(){
+                    this.timeNextLine.push(+(this.curTime).toFixed())
+                    console.log('lines: ',this.timeNextLine);
+                    
+                },
+                renderLine(){
+                    
+                },
+                timeLyricArr(){
+                    let _t = this.timeNodes.slice(); // clone timenodes
+                    let _lLengthArr = this.lyric.map(x => x.split(' ').length);
+                    return _lLengthArr.map(x => _t.splice(0,x));
+                    
+                }
+            },
+            computed: {
+                lyricArray(){
+                    return this.lyric.join(' ').replace(/ /g,' ').split(' ');
+                }
+            },
+            watch: {
+                curTime(n){
+                    // console.log('Time: ',n);
+                    let _tfixed = +n.toFixed();
+                    if(_tfixed === this.timeNextLine[this.curLine] + 1){
+                        this.curLine +=1;
+                    }
+                }
+            },
+            mounted(){
+                this.$refs.audioplayer.currentTime = 9;
+            }
+        });
+    </script>
+</body>
+</html>
